@@ -1,0 +1,18 @@
+{
+  "last_included_index": 5,
+  "last_included_term": 3,
+  "data": {
+    "db.host": {
+      "value": "new_value_after_watch",
+      "version": 2
+    },
+    "db.pass": {
+      "value": "secret123",
+      "version": 1
+    },
+    "db.user": {
+      "value": "admin",
+      "version": 1
+    }
+  }
+}
