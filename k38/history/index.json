@@ -1,0 +1,72 @@
+[
+  {
+    "record_id": "770217a4-0542-4a0d-9d40-6e74f5a6587c",
+    "timestamp": "2026-05-27T20:50:53.178385",
+    "fault_type": "single_phase_ground",
+    "fault_feeder_id": 3,
+    "grounding_type": "ungrounded",
+    "parameters": {
+      "sampling_rate": 12800,
+      "power_frequency": 50,
+      "num_feeders": 5,
+      "bus_fault_threshold": 0.3,
+      "resistance_threshold": 500.0
+    }
+  },
+  {
+    "record_id": "ac856138-1a64-4a4b-b676-3b2883730ac2",
+    "timestamp": "2026-05-27T20:58:38.627181",
+    "fault_type": "single_phase_ground",
+    "fault_feeder_id": 3,
+    "grounding_type": "ungrounded",
+    "parameters": {
+      "sampling_rate": 12800,
+      "power_frequency": 50,
+      "num_feeders": 5,
+      "bus_fault_threshold": 0.3,
+      "resistance_threshold": 500.0
+    }
+  },
+  {
+    "record_id": "1ff77afe-f75b-4c82-bf6f-c20718d6e4fe",
+    "timestamp": "2026-05-27T21:02:03.061060",
+    "fault_type": "single_phase_ground",
+    "fault_feeder_id": 3,
+    "grounding_type": "ungrounded",
+    "parameters": {
+      "sampling_rate": 12800,
+      "power_frequency": 50,
+      "num_feeders": 5,
+      "bus_fault_threshold": 0.3,
+      "resistance_threshold": 500.0
+    }
+  },
+  {
+    "record_id": "fb6b97fd-8eb3-497a-8e00-6e0a38d3c945",
+    "timestamp": "2026-05-27T21:03:14.620648",
+    "fault_type": "single_phase_ground",
+    "fault_feeder_id": 3,
+    "grounding_type": "ungrounded",
+    "parameters": {
+      "sampling_rate": 12800,
+      "power_frequency": 50,
+      "num_feeders": 5,
+      "bus_fault_threshold": 0.3,
+      "resistance_threshold": 500.0
+    }
+  },
+  {
+    "record_id": "4550d717-2ce9-409b-a8ea-c4fbe42641a7",
+    "timestamp": "2026-05-27T21:14:16.248629",
+    "fault_type": "single_phase_ground",
+    "fault_feeder_id": 3,
+    "grounding_type": "ungrounded",
+    "parameters": {
+      "sampling_rate": 12800,
+      "power_frequency": 50,
+      "num_feeders": 5,
+      "bus_fault_threshold": 0.3,
+      "resistance_threshold": 500.0
+    }
+  }
+]
