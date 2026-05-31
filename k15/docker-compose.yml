@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: sonar-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://sonar_user:sonar_password@db:5432/sonar_db
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_BUCKET_NAME=sonar-data
+    depends_on:
+      - db
+      - minio
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    container_name: sonar-db
+    environment:
+      POSTGRES_USER: sonar_user
+      POSTGRES_PASSWORD: sonar_password
+      POSTGRES_DB: sonar_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    container_name: sonar-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  minio_data:
