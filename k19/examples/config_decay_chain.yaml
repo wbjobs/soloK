@@ -1,0 +1,54 @@
+# 衰变链迁移模拟配置 (U-238系列)
+
+aquifer:
+  porosity: 0.3
+  permeability: 1e-10
+  alpha_l: 10.0
+  alpha_t: 1.0
+  retardation: 1.0
+
+nuclides:
+  - name: U-238
+    half_life: 1.41e17
+    distribution_coeff: 0.1
+    initial_concentration: 0.0
+    
+  - name: Th-234
+    half_life: 2.08e6
+    distribution_coeff: 0.5
+    parent: U-238
+    
+  - name: Pa-234m
+    half_life: 6.24e4
+    distribution_coeff: 0.3
+    parent: Th-234
+    
+  - name: U-234
+    half_life: 7.74e12
+    distribution_coeff: 0.15
+    parent: Pa-234m
+
+source:
+  mode: continuous
+  strength: 5e6
+  x: 40.0
+  y: 50.0
+  radius: 4.0
+  duration: 3.154e7
+
+grid:
+  nx: 120
+  ny: 80
+  dx: 1.5
+  dy: 1.5
+
+max_time: 3.154e9
+cfl_max: 0.4
+max_time_steps: 20000
+dimensions: 2
+threshold: 100.0
+
+monitoring_points:
+  MW-01: [80.0, 50.0]
+  MW-02: [120.0, 50.0]
+  MW-03: [160.0, 50.0]

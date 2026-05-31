@@ -1,0 +1,38 @@
+# 单核素迁移模拟配置
+
+aquifer:
+  porosity: 0.25
+  permeability: 5e-11
+  alpha_l: 5.0
+  alpha_t: 0.5
+  retardation: 2.0
+
+nuclides:
+  - name: Cs-137
+    half_life: 9.46e8
+    distribution_coeff: 2.0
+    initial_concentration: 0.0
+
+source:
+  mode: instantaneous
+  strength: 1e7
+  x: 50.0
+  y: 50.0
+  radius: 3.0
+  duration: 0
+
+grid:
+  nx: 80
+  ny: 60
+  dx: 2.0
+  dy: 2.0
+
+max_time: 1.577e9
+cfl_max: 0.5
+max_time_steps: 5000
+dimensions: 2
+threshold: 100.0
+
+monitoring_points:
+  Well_A: [100.0, 50.0]
+  Well_B: [150.0, 50.0]

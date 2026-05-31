@@ -1,0 +1,11 @@
+=== RadTran Simulation Summary ===
+
+Max CFL number: 0.5000
+Number of time steps: 1
+Total simulation time: 1.0 days
+Min time step: 24.00 hours
+Max time step: 24.00 hours
+Mean time step: 24.00 hours
+
+Nuclides:
+  - Cs-137
