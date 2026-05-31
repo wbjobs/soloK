@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM Snapshot & Diff</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1 class="title">DOM Snapshot</h1>
+      <p class="subtitle">捕获 & 对比 DOM 结构</p>
+    </header>
+
+    <div class="actions">
+      <button id="btnCapture" class="btn btn-primary" title="捕获当前页面DOM快照">
+        <span class="btn-icon">📸</span> 捕获快照
+      </button>
+      <button id="btnCompare" class="btn btn-secondary" disabled title="选择两个快照进行对比">
+        <span class="btn-icon">🔍</span> 对比
+      </button>
+    </div>
+
+    <div id="statusBar" class="status-bar hidden"></div>
+
+    <div id="captureProgress" class="progress-bar hidden">
+      <div id="progressFill" class="progress-fill"></div>
+      <span id="progressText" class="progress-text"></span>
+    </div>
+
+    <div class="snapshot-list-header">
+      <h2>快照列表</h2>
+      <span id="snapshotCount" class="count-badge">0</span>
+    </div>
+
+    <div id="snapshotList" class="snapshot-list">
+      <div class="empty-state">暂无快照，点击"捕获快照"开始</div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

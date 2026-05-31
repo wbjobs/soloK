@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM Diff Report</title>
+  <link rel="stylesheet" href="diff.css">
+</head>
+<body>
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <h1 class="page-title">DOM 对比结果</h1>
+      <span id="diffSummary" class="summary-badge"></span>
+    </div>
+    <div class="toolbar-right">
+      <button id="btnExpandAll" class="btn-tool" title="展开全部">展开全部</button>
+      <button id="btnCollapseAll" class="btn-tool" title="折叠全部">折叠全部</button>
+      <button id="btnExport" class="btn-tool btn-export" title="导出HTML报告">📄 导出报告</button>
+    </div>
+  </div>
+
+  <div class="snapshot-info-bar">
+    <div class="snapshot-card">
+      <span class="card-label">快照 A</span>
+      <span id="snapAName" class="card-name"></span>
+      <span id="snapAUrl" class="card-url"></span>
+      <span id="snapAMeta" class="card-meta"></span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="snapshot-card">
+      <span class="card-label">快照 B</span>
+      <span id="snapBName" class="card-name"></span>
+      <span id="snapBUrl" class="card-url"></span>
+      <span id="snapBMeta" class="card-meta"></span>
+    </div>
+  </div>
+
+  <div id="truncationWarning" class="truncation-warning hidden">
+    ⚠️ 一个或多个快照已被截断，对比结果可能不完整
+  </div>
+
+  <div id="replayStatus" class="replay-status hidden"></div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">全部</button>
+    <button class="filter-btn" data-filter="added">🟢 新增</button>
+    <button class="filter-btn" data-filter="removed">🔴 删除</button>
+    <button class="filter-btn" data-filter="modified">🟡 修改</button>
+  </div>
+
+  <div id="diffTree" class="diff-tree"></div>
+
+  <div id="emptyDiff" class="empty-state hidden">
+    <div class="empty-icon">🎉</div>
+    <div class="empty-text">两个快照完全一致，没有差异！</div>
+  </div>
+
+  <div id="loadMoreContainer" class="load-more-container hidden">
+    <button id="btnLoadMore" class="btn-load-more">加载更多差异项...</button>
+    <span id="loadMoreInfo" class="load-more-info"></span>
+  </div>
+
+  <script src="diff.js"></script>
+</body>
+</html>
