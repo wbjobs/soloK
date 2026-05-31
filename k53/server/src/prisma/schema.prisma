@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Room {
+  id                    String     @id @default(uuid())
+  name                  String
+  passwordHash          String?
+  createdBy             String
+  currentState          Json       @default("{}")
+  parentRoomId          String?
+  forkedFromSnapshotId  String?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  snapshots             Snapshot[]
+  operations            Operation[]
+  members               Member[]
+  parentRoom            Room?      @relation("RoomBranches", fields: [parentRoomId], references: [id])
+  branches              Room[]     @relation("RoomBranches")
+}
+
+model Snapshot {
+  id              String   @id @default(uuid())
+  roomId          String
+  room            Room     @relation(fields: [roomId], references: [id])
+  name            String
+  description     String?
+  graphData       Json
+  operationCount  Int      @default(0)
+  createdAt       DateTime @default(now())
+  createdBy       String
+  operations      Operation[]
+}
+
+model Operation {
+  id            String   @id @default(uuid())
+  roomId        String
+  room          Room     @relation(fields: [roomId], references: [id])
+  memberId      String
+  member        Member   @relation(fields: [memberId], references: [id])
+  operationType String
+  crdtData      Json
+  version       Int
+  createdAt     DateTime @default(now())
+  snapshotId    String?
+  snapshot      Snapshot? @relation(fields: [snapshotId], references: [id])
+  @@index([roomId, createdAt])
+}
+
+model Member {
+  id            String      @id @default(uuid())
+  roomId        String
+  room          Room        @relation(fields: [roomId], references: [id])
+  userId        String
+  userName      String
+  color         String
+  isOnline      Boolean     @default(true)
+  joinedAt      DateTime    @default(now())
+  lastActiveAt  DateTime    @default(now())
+  operations    Operation[]
+  @@unique([roomId, userId])
+}
