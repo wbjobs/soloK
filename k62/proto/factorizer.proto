@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package factorizer;
+
+option go_package = "github.com/solok/k62/pb";
+
+enum Priority {
+  LOW = 0;
+  MEDIUM = 1;
+  HIGH = 2;
+}
+
+message FactorizeRequest {
+  repeated string numbers = 1;
+  Priority priority = 2;
+}
+
+message FactorizeResponse {
+  repeated FactorizationResult results = 1;
+}
+
+message FactorizationResult {
+  string number = 1;
+  repeated string factors = 2;
+  string error = 3;
+  bool verified = 4;
+}
+
+message TaskRequest {
+  string task_id = 1;
+  string number = 2;
+  int32 retry_count = 3;
+  Priority priority = 4;
+}
+
+message TaskResponse {
+  string task_id = 1;
+  string number = 2;
+  repeated string factors = 3;
+  string error = 4;
+  bool verified = 5;
+}
+
+message RegisterRequest {
+  string worker_id = 1;
+  string worker_addr = 2;
+}
+
+message RegisterResponse {
+  bool accepted = 1;
+  string scheduler_id = 2;
+  string error = 3;
+}
+
+message HeartbeatRequest {
+  string worker_id = 1;
+  bool busy = 2;
+}
+
+message HeartbeatResponse {
+  bool acknowledged = 1;
+}
+
+service FactorizerService {
+  rpc Factorize(FactorizeRequest) returns (FactorizeResponse);
+}
+
+service WorkerService {
+  rpc ExecuteTask(TaskRequest) returns (TaskResponse);
+}
+
+service RegistryService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+}
