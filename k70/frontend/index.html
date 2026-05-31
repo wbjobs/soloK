@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 图像局部重绘 - 虚拟试衣间</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🎨 AI 图像局部重绘</h1>
+            <p class="subtitle">上传人物照片，涂抹衣服区域，输入提示词，AI 为您换装</p>
+        </header>
+
+        <main class="main-content">
+            <div class="mode-tabs">
+                <button class="tab-btn active" data-mode="single">单图模式</button>
+                <button class="tab-btn" data-mode="batch">批量模式</button>
+                <button class="tab-btn" data-mode="gallery">历史画廊</button>
+            </div>
+
+            <div class="tab-content" id="singleMode">
+                <div class="upload-section">
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                        <div class="upload-content">
+                            <div class="upload-icon">📸</div>
+                            <p class="upload-text">点击或拖拽上传人物全身照</p>
+                            <p class="upload-hint">支持 JPG、PNG、WebP 格式</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="editor-section" id="editorSection" style="display: none;">
+                    <div class="canvas-container">
+                        <div class="canvas-wrapper">
+                            <canvas id="imageCanvas"></canvas>
+                            <canvas id="maskCanvas"></canvas>
+                        </div>
+                        
+                        <div class="toolbar">
+                            <div class="tool-group">
+                                <label class="tool-label">画笔大小</label>
+                                <input type="range" id="brushSize" min="5" max="100" value="30">
+                                <span id="brushSizeValue">30px</span>
+                            </div>
+                            <div class="tool-group">
+                                <button class="btn btn-secondary" id="clearMaskBtn">清除涂抹</button>
+                                <button class="btn btn-secondary" id="undoBtn">撤销</button>
+                            </div>
+                            <div class="tool-group">
+                                <label class="tool-label">
+                                    <input type="checkbox" id="showMaskToggle" checked>
+                                    显示遮罩
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="controls-section">
+                        <div class="control-group">
+                            <label class="control-label">🖼️ 参考风格图 (可选)</label>
+                            <div class="reference-upload" id="referenceUpload">
+                                <input type="file" id="referenceInput" accept="image/*" hidden>
+                                <div class="reference-preview" id="referencePreview">
+                                    <span class="reference-placeholder">点击上传参考图，AI将提取其风格</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">✨ 提示词</label>
+                            <input type="text" id="promptInput" class="prompt-input" 
+                                   placeholder="例如：条纹衬衫、格子连衣裙、牛仔外套..."
+                                   value="条纹衬衫">
+                            <div class="prompt-suggestions">
+                                <span class="suggestion-tag" data-prompt="条纹衬衫">条纹衬衫</span>
+                                <span class="suggestion-tag" data-prompt="格子连衣裙">格子连衣裙</span>
+                                <span class="suggestion-tag" data-prompt="牛仔外套">牛仔外套</span>
+                                <span class="suggestion-tag" data-prompt="红色连衣裙">红色连衣裙</span>
+                                <span class="suggestion-tag" data-prompt="西装">西装</span>
+                                <span class="suggestion-tag" data-prompt="T恤牛仔裤">T恤牛仔裤</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">⚙️ 高级参数</label>
+                            <div class="params-grid">
+                                <div class="param-item">
+                                    <label>推理步数</label>
+                                    <input type="number" id="stepsInput" value="50" min="20" max="100">
+                                </div>
+                                <div class="param-item">
+                                    <label>引导强度</label>
+                                    <input type="number" id="guidanceInput" value="7.5" min="1" max="20" step="0.5">
+                                </div>
+                                <div class="param-item">
+                                    <label>重绘强度</label>
+                                    <input type="number" id="strengthInput" value="1.0" min="0" max="1" step="0.1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary btn-generate" id="generateBtn">
+                            <span class="btn-icon">🚀</span>
+                            开始生成
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="batchMode" style="display: none;">
+                <div class="batch-section">
+                    <div class="batch-upload-area" id="batchUploadArea">
+                        <input type="file" id="batchFileInput" accept="image/*" multiple hidden>
+                        <div class="batch-upload-content">
+                            <div class="upload-icon">📂</div>
+                            <p class="upload-text">点击或拖拽上传多张照片</p>
+                            <p class="upload-hint">批量上传，统一涂抹和提示词</p>
+                        </div>
+                    </div>
+
+                    <div class="batch-list" id="batchList" style="display: none;">
+                        <div class="batch-header">
+                            <h3>已上传照片</h3>
+                            <span class="batch-count" id="batchCount">0 张</span>
+                        </div>
+                        <div class="batch-grid" id="batchGrid"></div>
+                    </div>
+
+                    <div class="batch-editor" id="batchEditor" style="display: none;">
+                        <div class="batch-canvas-section">
+                            <div class="canvas-container">
+                                <div class="canvas-wrapper">
+                                    <canvas id="batchImageCanvas"></canvas>
+                                    <canvas id="batchMaskCanvas"></canvas>
+                                </div>
+                                <div class="toolbar">
+                                    <div class="tool-group">
+                                        <label class="tool-label">画笔大小</label>
+                                        <input type="range" id="batchBrushSize" min="5" max="100" value="30">
+                                        <span id="batchBrushSizeValue">30px</span>
+                                    </div>
+                                    <div class="tool-group">
+                                        <button class="btn btn-secondary" id="batchClearMaskBtn">清除涂抹</button>
+                                        <button class="btn btn-secondary" id="batchUndoBtn">撤销</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="batch-controls">
+                            <div class="control-group">
+                                <label class="control-label">🖼️ 参考风格图 (可选)</label>
+                                <div class="reference-upload" id="batchReferenceUpload">
+                                    <input type="file" id="batchReferenceInput" accept="image/*" hidden>
+                                    <div class="reference-preview" id="batchReferencePreview">
+                                        <span class="reference-placeholder">点击上传参考图，AI将提取其风格</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label">✨ 统一提示词</label>
+                                <input type="text" id="batchPromptInput" class="prompt-input" 
+                                       placeholder="输入提示词，将应用于所有照片"
+                                       value="条纹衬衫">
+                            </div>
+
+                            <button class="btn btn-primary btn-generate" id="batchGenerateBtn">
+                                <span class="btn-icon">🚀</span>
+                                批量生成
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="batch-progress" id="batchProgress" style="display: none;">
+                        <div class="progress-card">
+                            <div class="progress-header">
+                                <h3>📦 批量处理中...</h3>
+                                <span class="progress-status" id="batchProgressStatus">准备中</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="batchProgressFill"></div>
+                                </div>
+                                <span class="progress-percent" id="batchProgressPercent">0%</span>
+                            </div>
+                            <div class="batch-progress-detail">
+                                <span id="batchProgressDetail">0 / 0 完成</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="galleryMode" style="display: none;">
+                <div class="gallery-section">
+                    <div class="gallery-filters">
+                        <div class="filter-group">
+                            <label>状态筛选:</label>
+                            <select id="galleryStatusFilter">
+                                <option value="">全部</option>
+                                <option value="completed">已完成</option>
+                                <option value="failed">失败</option>
+                                <option value="processing">处理中</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>每页显示:</label>
+                            <select id="galleryPageSize">
+                                <option value="12">12</option>
+                                <option value="24">24</option>
+                                <option value="48">48</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="gallery-grid" id="galleryGrid">
+                        <p class="empty-history">暂无历史记录</p>
+                    </div>
+
+                    <div class="gallery-pagination" id="galleryPagination" style="display: none;">
+                        <button class="btn btn-secondary" id="galleryPrevBtn">上一页</button>
+                        <span class="pagination-info" id="galleryPaginationInfo">第 1 页 / 共 1 页</span>
+                        <button class="btn btn-secondary" id="galleryNextBtn">下一页</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="progress-section" id="progressSection" style="display: none;">
+                <div class="progress-card">
+                    <div class="progress-header">
+                        <h3>🎨 AI 正在生成中...</h3>
+                        <span class="progress-status" id="progressStatus">准备中</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <span class="progress-percent" id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-info">
+                        <div class="spinner"></div>
+                        <span id="progressText">正在加载模型，请稍候...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-section" id="resultSection" style="display: none;">
+                <div class="result-header">
+                    <h2>✨ 生成结果</h2>
+                    <div class="compare-toggle">
+                        <label class="toggle-label">
+                            <input type="radio" name="compareMode" value="side" checked>
+                            并排对比
+                        </label>
+                        <label class="toggle-label">
+                            <input type="radio" name="compareMode" value="slider">
+                            滑动对比
+                        </label>
+                    </div>
+                </div>
+
+                <div class="compare-container" id="compareContainer">
+                    <div class="side-by-side" id="sideBySideView">
+                        <div class="image-card">
+                            <div class="image-label">原图</div>
+                            <img id="originalResult" src="" alt="原图">
+                        </div>
+                        <div class="image-card">
+                            <div class="image-label">生成图</div>
+                            <img id="generatedResult" src="" alt="生成图">
+                        </div>
+                    </div>
+
+                    <div class="slider-compare" id="sliderCompareView" style="display: none;">
+                        <div class="slider-container">
+                            <img id="sliderOriginal" src="" alt="原图">
+                            <div class="slider-overlay">
+                                <img id="sliderGenerated" src="" alt="生成图">
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="compare-slider" id="compareSlider">
+                            <div class="slider-handle" id="sliderHandle">
+                                <span class="handle-icon">⟷</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-actions">
+                    <button class="btn btn-secondary" id="downloadBtn">下载生成图</button>
+                    <button class="btn btn-primary" id="newTaskBtn">新建任务</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="gallery-modal" id="galleryModal" style="display: none;">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">×</button>
+            <div class="modal-body">
+                <div class="modal-images">
+                    <div class="modal-image-card">
+                        <div class="image-label">原图</div>
+                        <img id="modalOriginal" src="" alt="原图">
+                    </div>
+                    <div class="modal-image-card">
+                        <div class="image-label">生成图</div>
+                        <img id="modalGenerated" src="" alt="生成图">
+                    </div>
+                </div>
+                <div class="modal-info">
+                    <div class="modal-prompt">
+                        <strong>提示词:</strong> <span id="modalPrompt"></span>
+                    </div>
+                    <div class="modal-date">
+                        <strong>创建时间:</strong> <span id="modalDate"></span>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-secondary" id="modalDownloadBtn">下载</button>
+                        <button class="btn btn-primary" id="modalRegenerateBtn">🔄 重新生成</button>
+                        <button class="btn btn-danger" id="modalDeleteBtn">🗑️ 删除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
