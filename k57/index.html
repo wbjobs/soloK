@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D粒子生命模拟系统 - Boid Algorithm</title>
+  <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="canvas"></canvas>
+    
+    <div id="ui-panel">
+      <div class="panel-header">
+        <h2>Boid 控制面板</h2>
+        <button id="toggle-panel" class="toggle-btn">−</button>
+      </div>
+      
+      <div class="panel-content">
+        <div class="section">
+          <h3>粒子数量: <span id="particle-count">5000</span></h3>
+        </div>
+        
+        <div class="section">
+          <h3>Boid 规则权重</h3>
+          
+          <div class="control">
+            <label>
+              分离 (Separation): 
+              <span id="separation-value">1.5</span>
+            </label>
+            <input type="range" id="separation" min="0" max="5" step="0.1" value="1.5">
+          </div>
+          
+          <div class="control">
+            <label>
+              对齐 (Alignment): 
+              <span id="alignment-value">1.0</span>
+            </label>
+            <input type="range" id="alignment" min="0" max="5" step="0.1" value="1.0">
+          </div>
+          
+          <div class="control">
+            <label>
+              聚集 (Cohesion): 
+              <span id="cohesion-value">1.0</span>
+            </label>
+            <input type="range" id="cohesion" min="0" max="5" step="0.1" value="1.0">
+          </div>
+        </div>
+        
+        <div class="section">
+          <h3>捕食者-猎物系统</h3>
+          
+          <div class="control">
+            <label>
+              追逐力 (Chase): 
+              <span id="chase-weight-value">2.0</span>
+            </label>
+            <input type="range" id="chase-weight" min="0" max="8" step="0.1" value="2.0">
+          </div>
+          
+          <div class="control">
+            <label>
+              逃跑力 (Flee): 
+              <span id="flee-weight-value">3.0</span>
+            </label>
+            <input type="range" id="flee-weight" min="0" max="10" step="0.1" value="3.0">
+          </div>
+          
+          <div class="control">
+            <label>
+              捕获半径 (Catch): 
+              <span id="catch-radius-value">0.5</span>
+            </label>
+            <input type="range" id="catch-radius" min="0.1" max="3" step="0.1" value="0.5">
+          </div>
+          
+          <div class="population-legend">
+            <span class="legend-predator">● 捕食者</span>
+            <span class="legend-prey">● 猎物</span>
+          </div>
+        </div>
+        
+        <div class="section">
+          <h3>运动参数</h3>
+          
+          <div class="control">
+            <label>
+              最大速度: 
+              <span id="max-speed-value">0.8</span>
+            </label>
+            <input type="range" id="max-speed" min="0.1" max="3" step="0.1" value="0.8">
+          </div>
+          
+          <div class="control">
+            <label>
+              感知半径: 
+              <span id="perception-radius-value">2.5</span>
+            </label>
+            <input type="range" id="perception-radius" min="0.5" max="10" step="0.1" value="2.5">
+          </div>
+          
+          <div class="control">
+            <label>
+              边界弹性: 
+              <span id="bounce-value">1.0</span>
+            </label>
+            <input type="range" id="bounce" min="0" max="2" step="0.1" value="1.0">
+          </div>
+        </div>
+        
+        <div class="section">
+          <h3>视觉效果</h3>
+          
+          <div class="control">
+            <label>
+              粒子大小: 
+              <span id="particle-size-value">3.0</span>
+            </label>
+            <input type="range" id="particle-size" min="1" max="10" step="0.5" value="3.0">
+          </div>
+          
+          <div class="control">
+            <label>
+              轨迹长度: 
+              <span id="trail-length-value">20</span>
+            </label>
+            <input type="range" id="trail-length" min="0" max="60" step="1" value="20">
+          </div>
+          
+          <div class="control">
+            <label>
+              泛光强度: 
+              <span id="bloom-strength-value">1.5</span>
+            </label>
+            <input type="range" id="bloom-strength" min="0" max="3" step="0.1" value="1.5">
+          </div>
+          
+          <div class="control">
+            <label>
+              泛光阈值: 
+              <span id="bloom-threshold-value">0.4</span>
+            </label>
+            <input type="range" id="bloom-threshold" min="0" max="1" step="0.05" value="0.4">
+          </div>
+        </div>
+        
+        <div class="section">
+          <h3>预设管理</h3>
+          <div class="button-group">
+            <select id="preset-select">
+              <option value="">-- 选择预设 --</option>
+            </select>
+            <button id="save-preset">保存预设</button>
+            <button id="load-preset">加载预设</button>
+            <button id="delete-preset">删除预设</button>
+          </div>
+        </div>
+        
+        <div class="section">
+          <h3>相机路径</h3>
+          <div class="button-group">
+            <select id="path-select">
+              <option value="">-- 选择路径 --</option>
+            </select>
+            <button id="start-recording">开始录制</button>
+            <button id="stop-recording" disabled>停止录制</button>
+            <button id="play-path">播放路径</button>
+            <button id="stop-path">停止播放</button>
+            <button id="delete-path">删除路径</button>
+          </div>
+          <div class="status" id="recording-status"></div>
+        </div>
+        
+        <div class="section">
+          <h3>其他</h3>
+          <div class="button-group">
+            <button id="reset">重置粒子</button>
+            <button id="toggle-bounding-box">显示包围盒</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="info-panel">
+      <div>FPS: <span id="fps">0</span></div>
+      <div>粒子数: <span id="particle-info">5000</span></div>
+      <div><span style="color:#ff3322">捕食者: <span id="predator-count">0</span></span> | <span style="color:#22dd55">猎物: <span id="prey-count">0</span></span></div>
+      <div>鼠标拖拽旋转 | 滚轮缩放</div>
+    </div>
+    
+    <div id="save-dialog" class="dialog hidden">
+      <div class="dialog-content">
+        <h3 id="dialog-title">保存</h3>
+        <input type="text" id="dialog-input" placeholder="输入名称...">
+        <div class="dialog-buttons">
+          <button id="dialog-ok">确定</button>
+          <button id="dialog-cancel">取消</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
