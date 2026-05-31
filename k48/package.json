@@ -1,0 +1,16 @@
+{
+  "name": "reliable-udp-file-transfer",
+  "version": "1.0.0",
+  "description": "Reliable UDP file transfer service with congestion control",
+  "main": "server.js",
+  "scripts": {
+    "server": "node server.js",
+    "client": "node client.js"
+  },
+  "keywords": ["udp", "file-transfer", "reliable", "congestion-control"],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
