@@ -1,0 +1,25 @@
+################################################################################
+# Flink Job Configuration
+################################################################################
+
+
+kafka.brokers: localhost:9092
+kafka.topic: nginx-logs
+kafka.group.id: log-anomaly-detector
+
+redis.host: localhost
+redis.port: 6379
+
+postgres.url: jdbc:postgresql://localhost:5432/loganomaly
+postgres.user: loganomaly
+postgres.password: loganomaly
+
+
+flink.window.size: 10000
+flink.window.slide: 5000
+flink.watermark.delay: 3000
+flink.checkpoint.interval: 30000
+
+
+anomaly.sigma.multiplier: 2.0
+anomaly.min.samples: 5

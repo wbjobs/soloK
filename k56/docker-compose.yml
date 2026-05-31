@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-logs:/var/lib/zookeeper/log
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    hostname: kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 24
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+
+  redis:
+    image: redis:7.2-alpine
+    hostname: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+
+  postgres:
+    image: postgres:16-alpine
+    hostname: postgres
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: loganomaly
+      POSTGRES_USER: loganomaly
+      POSTGRES_PASSWORD: loganomaly
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - kafka
+    entrypoint: >
+      bash -c "
+        echo 'Waiting for Kafka to be ready...'
+        cub kafka-ready -b kafka:29092 1 30
+        echo 'Creating topic nginx-logs...'
+        kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --topic nginx-logs --partitions 3 --replication-factor 1
+        echo 'Topic created successfully.'
+      "
+
+  log-generator:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - kafka
+      - kafka-init
+    entrypoint: >
+      bash -c "
+        echo 'Starting Nginx log generator...'
+        while true; do
+          IP=\"192.168.1.$$(( RANDOM % 50 + 1 ))\"
+          TS=$$(date +%s%3N)
+          PATHS=('/api/users' '/api/orders' '/api/products' '/api/auth/login' '/api/search' '/static/app.js' '/health' '/api/payments')
+          URL=\"$${PATHS[$$RANDOM % $${#PATHS[@]}]}\"
+          CODES=(200 200 200 200 200 301 400 404 500)
+          STATUS=$${CODES[$$RANDOM % $${#CODES[@]}]}
+          RT=$$(echo \"scale=2; $$RANDOM / 10\" | bc)
+          echo \"{\\\"ip\\\":\\\"$$IP\\\",\\\"timestamp\\\":$$TS,\\\"url\\\":\\\"$$URL\\\",\\\"statusCode\\\":$$STATUS,\\\"responseTime\\\":$$RT}\" | kafka-console-producer --bootstrap-server kafka:29092 --topic nginx-logs
+          sleep 0.$$(shuf -i 1-9 -n 1)
+        done
+      "
+
+volumes:
+  zookeeper-data:
+  zookeeper-logs:
+  kafka-data:
+  redis-data:
+  postgres-data:
