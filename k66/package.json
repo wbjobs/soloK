@@ -1,0 +1,15 @@
+{
+  "name": "remote-desktop-system",
+  "version": "1.0.0",
+  "description": "Remote desktop simulation system with React frontend, Node.js backend, and Python edge service",
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm start",
+    "build:frontend": "cd frontend && npm run build",
+    "start:python": "cd python-service && python main.py"
+  },
+  "keywords": ["webrtc", "remote-desktop", "pyautogui"],
+  "author": "",
+  "license": "MIT"
+}

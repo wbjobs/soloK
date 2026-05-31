@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: remote_desktop
+    networks:
+      - app-network
+
+  backend:
+    build: ./backend
+    container_name: node-backend
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/remote_desktop
+      - PORT=3001
+    networks:
+      - app-network
+
+  python-service:
+    build: ./python-service
+    container_name: python-edge-service
+    environment:
+      - BACKEND_URL=http://backend:3001
+    networks:
+      - app-network
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /dev/shm:/dev/shm
+    privileged: true
+
+volumes:
+  mongodb_data:
+
+networks:
+  app-network:
+    driver: bridge
