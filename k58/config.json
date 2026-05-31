@@ -1,0 +1,11 @@
+{
+  "mode": "snowflake",
+  "grpc_port": 50051,
+  "http_port": 9090,
+  "etcd_endpoints": ["localhost:2379"],
+  "mysql_dsn": "root:password@tcp(localhost:3306)/idgen?charset=utf8mb4&parseTime=True&loc=Local",
+  "biz_tag": "default",
+  "segment_step": 1000,
+  "biz_type": 0,
+  "shard_key": 0
+}

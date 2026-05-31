@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package idgenerator;
+
+option go_package = "idgenerator/api/proto";
+
+enum GeneratorMode {
+  SNOWFLAKE = 0;
+  SEGMENT = 1;
+  UUID = 2;
+}
+
+message GenerateIDRequest {
+  GeneratorMode mode = 1;
+  int32 count = 2;
+}
+
+message GenerateIDResponse {
+  repeated int64 ids = 1;
+  repeated string uuids = 2;
+  GeneratorMode mode = 3;
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  bool healthy = 1;
+  string message = 2;
+  map<string, string> details = 3;
+}
+
+message ParseIDRequest {
+  int64 id = 1;
+}
+
+message ParseIDResponse {
+  int64 id = 1;
+  int64 timestamp = 2;
+  string time_str = 3;
+  int32 biz_type = 4;
+  int32 shard_key = 5;
+  int32 worker_id = 6;
+  int32 sequence = 7;
+}
+
+service IDGenerator {
+  rpc GenerateID(GenerateIDRequest) returns (GenerateIDResponse);
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+  rpc ParseID(ParseIDRequest) returns (ParseIDResponse);
+}
