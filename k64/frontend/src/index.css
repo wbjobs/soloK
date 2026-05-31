@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Inter', system-ui, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: dark;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0a0a1a;
+}
+
+body {
+  background: radial-gradient(ellipse at center, #1a1a3e 0%, #0a0a1a 70%, #050510 100%);
+}
+
+.canvas-container {
+  position: absolute;
+  inset: 0;
+}
+
+@layer components {
+  .glass-panel {
+    background: rgba(15, 15, 46, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 245, 255, 0.2);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .glow-cyan {
+    box-shadow: 
+      0 0 20px rgba(0, 245, 255, 0.4),
+      0 0 40px rgba(0, 245, 255, 0.2);
+  }
+
+  .text-glow {
+    text-shadow: 
+      0 0 10px currentColor,
+      0 0 20px currentColor;
+  }
+
+  .data-value {
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 15, 46, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 245, 255, 0.4);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 245, 255, 0.6);
+}
