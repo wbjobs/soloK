@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIDI文件分析系统</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎹 MIDI文件分析系统</h1>
+            <p class="subtitle">上传.mid文件，解析音符、力度、节拍、音轨</p>
+        </header>
+
+        <section class="upload-section">
+            <div id="drop-zone" class="drop-zone">
+                <div class="drop-icon">📁</div>
+                <p class="drop-text">拖拽 .mid 文件到这里</p>
+                <p class="drop-subtext">或</p>
+                <button id="browse-btn" class="browse-btn">选择文件</button>
+                <input type="file" id="file-input" accept=".mid,.midi" style="display: none;">
+            </div>
+        </section>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>正在解析MIDI文件...</p>
+        </div>
+
+        <div id="error" class="error hidden"></div>
+
+        <section id="results-section" class="results-section hidden">
+            <div class="info-panel">
+                <h2>文件信息</h2>
+                <div id="file-info" class="file-info"></div>
+            </div>
+
+            <div class="controls-panel">
+                <div class="control-group">
+                    <label>乐器筛选:</label>
+                    <select id="instrument-filter">
+                        <option value="">全部乐器</option>
+                    </select>
+                </div>
+                <div class="control-group bpm-group">
+                    <label>BPM:</label>
+                    <input type="range" id="bpm-slider" min="40" max="300" value="120">
+                    <span id="bpm-value" class="bpm-value">120</span>
+                    <button id="bpm-reset" class="btn btn-small">重置</button>
+                </div>
+                <div class="control-group">
+                    <label>小节范围:</label>
+                    <input type="number" id="start-measure" min="1" placeholder="起始">
+                    <span> - </span>
+                    <input type="number" id="end-measure" placeholder="结束">
+                    <button id="export-btn" class="btn">导出范围</button>
+                </div>
+                <div class="control-group">
+                    <button id="play-btn" class="btn play-btn">▶ 播放</button>
+                    <button id="stop-btn" class="btn stop-btn">⏹ 停止</button>
+                    <button id="report-btn" class="btn">📊 生成报告</button>
+                </div>
+            </div>
+
+            <div class="track-mixer-panel">
+                <h3>🎛️ 音轨混音台</h3>
+                <div id="track-mixer" class="track-mixer"></div>
+            </div>
+
+            <div class="visualization-section">
+                <h2>钢琴卷帘视图</h2>
+                <div class="piano-roll-container">
+                    <canvas id="piano-roll"></canvas>
+                </div>
+            </div>
+
+            <div class="visualization-section">
+                <h2>力度柱状图</h2>
+                <div class="velocity-chart-container">
+                    <canvas id="velocity-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="tracks-section">
+                <h2>音轨详情</h2>
+                <div id="tracks-list" class="tracks-list"></div>
+            </div>
+
+            <div id="report-section" class="report-section hidden">
+                <h2>分析报告</h2>
+                <div id="report-content" class="report-content"></div>
+            </div>
+        </section>
+
+        <section class="history-section">
+            <h2>历史文件</h2>
+            <div id="history-list" class="history-list"></div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
