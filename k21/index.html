@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海底电缆热特性实时监测系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>海底电缆热特性实时监测系统</h1>
+            <div class="status-bar">
+                <span id="connection-status" class="status connected">● 已连接</span>
+                <span id="current-time">当前时间: --</span>
+                <span id="scan-info">扫描间隔: 5s | 测点: 10000</span>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <div class="panel">
+                    <h3>电缆选择</h3>
+                    <div id="cable-selector">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="cable1" checked data-cable="0">
+                            <span class="cable-color" style="background: #ff6b6b"></span>
+                            电缆A - 主线路
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="cable2" data-cable="1">
+                            <span class="cable-color" style="background: #4ecdc4"></span>
+                            电缆B - 备用线路
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="cable3" data-cable="2">
+                            <span class="cable-color" style="background: #45b7d1"></span>
+                            电缆C - 支线1
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="cable4" data-cable="3">
+                            <span class="cable-color" style="background: #96ceb4"></span>
+                            电缆D - 支线2
+                        </label>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>实时监测</h3>
+                    <div class="metric">
+                        <span class="metric-label">最高温度</span>
+                        <span id="max-temp" class="metric-value warning">--°C</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">最低温度</span>
+                        <span id="min-temp" class="metric-value">--°C</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">平均温度</span>
+                        <span id="avg-temp" class="metric-value">--°C</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">最大温升速率</span>
+                        <span id="max-rate" class="metric-value">--°C/min</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">动态载流量</span>
+                        <span id="dcr-value" class="metric-value">--A</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">土壤热阻系数</span>
+                        <span id="thermal-resistivity" class="metric-value">--K·m/W</span>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>热点区域</h3>
+                    <div id="hotspot-list" class="hotspot-list">
+                        <p class="no-data">暂无热点</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>告警信息</h3>
+                    <div id="alert-list" class="alert-list">
+                        <p class="no-data">暂无告警</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>剩余寿命预测</h3>
+                    <div class="metric">
+                        <span class="metric-label">等效运行时间</span>
+                        <span id="equivalent-time" class="metric-value">--年</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">剩余寿命</span>
+                        <span id="remaining-life" class="metric-value warning">--年</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">寿命消耗率</span>
+                        <span id="life-consumption" class="metric-value">--%</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">寿命应力指数</span>
+                        <span id="life-stress-index" class="metric-value">--</span>
+                    </div>
+                    <div id="life-bar-container">
+                        <div id="life-bar" class="life-bar"></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>局部放电监测</h3>
+                    <div class="metric">
+                        <span class="metric-label">放电次数</span>
+                        <span id="pd-count" class="metric-value">--</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">最大放电量</span>
+                        <span id="pd-max-pc" class="metric-value">--pC</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">平均放电量</span>
+                        <span id="pd-avg-pc" class="metric-value">--pC</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">状态</span>
+                        <span id="pd-status" class="metric-value">--</span>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="content">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="3d">3D可视化</button>
+                    <button class="tab-btn" data-tab="comparison">多电缆对比</button>
+                    <button class="tab-btn" data-tab="playback">历史回放</button>
+                </div>
+
+                <div id="tab-3d" class="tab-content active">
+                    <div id="three-container" class="three-container"></div>
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <label>显示模式:</label>
+                            <select id="display-mode">
+                                <option value="temperature">温度分布</option>
+                                <option value="rate">温升速率</option>
+                                <option value="dcr">动态载流量</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>自动旋转:</label>
+                            <input type="checkbox" id="auto-rotate">
+                        </div>
+                        <div class="control-group">
+                            <label>显示地形:</label>
+                            <input type="checkbox" id="show-terrain" checked>
+                        </div>
+                        <div class="control-group">
+                            <label>显示放电:</label>
+                            <input type="checkbox" id="show-discharge" checked>
+                        </div>
+                        <div class="control-group">
+                            <label>放电密度热力图:</label>
+                            <input type="checkbox" id="show-density-heatmap">
+                        </div>
+                    </div>
+                    <div id="tooltip" class="tooltip hidden">
+                        <div class="tooltip-title" id="tooltip-title">测点信息</div>
+                        <div class="tooltip-content" id="tooltip-content"></div>
+                    </div>
+                </div>
+
+                <div id="tab-comparison" class="tab-content">
+                    <div class="chart-container">
+                        <canvas id="comparison-chart"></canvas>
+                    </div>
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <label>显示位置 (km):</label>
+                            <input type="range" id="comparison-position" min="0" max="10" step="0.1" value="5">
+                            <span id="position-value">5.0 km</span>
+                        </div>
+                        <div class="control-group">
+                            <label>时间范围:</label>
+                            <select id="comparison-time-range">
+                                <option value="3600">最近1小时</option>
+                                <option value="21600">最近6小时</option>
+                                <option value="86400" selected>最近24小时</option>
+                                <option value="172800">最近48小时</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="temperature-profile-chart"></canvas>
+                    </div>
+                </div>
+
+                <div id="tab-playback" class="tab-content">
+                    <div class="chart-container">
+                        <canvas id="playback-chart"></canvas>
+                    </div>
+                    <div class="playback-controls">
+                        <div class="playback-timeline">
+                            <div class="timeline-track">
+                                <div id="timeline-progress" class="timeline-progress"></div>
+                            </div>
+                            <input type="range" id="playback-slider" min="0" max="100" value="0">
+                            <div class="timeline-labels">
+                                <span id="playback-start-time">-48h</span>
+                                <span id="playback-current-time">--:--</span>
+                                <span id="playback-end-time">现在</span>
+                            </div>
+                        </div>
+                        <div class="playback-buttons">
+                            <button id="btn-prev" class="playback-btn">⏮</button>
+                            <button id="btn-play" class="playback-btn primary">▶ 播放</button>
+                            <button id="btn-next" class="playback-btn">⏭</button>
+                            <button id="btn-reset" class="playback-btn">⏹ 重置</button>
+                        </div>
+                        <div class="playback-speed">
+                            <label>播放速度:</label>
+                            <select id="playback-speed">
+                                <option value="0.5">0.5x</option>
+                                <option value="1" selected>1x</option>
+                                <option value="2">2x</option>
+                                <option value="5">5x</option>
+                                <option value="10">10x</option>
+                                <option value="30">30x</option>
+                                <option value="60">60x</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="heatmap-container">
+                        <canvas id="heatmap-canvas"></canvas>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-controls">
+                <button id="btn-export-excel" class="btn">导出Excel热图</button>
+                <button id="btn-export-pdf" class="btn">导出PDF报告</button>
+                <button id="btn-settings" class="btn">系统设置</button>
+            </div>
+            <div class="footer-info">
+                <span>© 2024 海底电缆监测系统 v1.0</span>
+            </div>
+        </footer>
+    </div>
+
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>系统设置</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>温度阈值 (°C):</label>
+                    <input type="number" id="setting-temp-threshold" value="90">
+                </div>
+                <div class="form-group">
+                    <label>温升速率阈值 (°C/min):</label>
+                    <input type="number" id="setting-rate-threshold" value="5" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label>环境温度 (°C):</label>
+                    <input type="number" id="setting-ambient-temp" value="25">
+                </div>
+                <div class="form-group">
+                    <label>温差告警阈值 (°C):</label>
+                    <input type="number" id="setting-diff-threshold" value="20">
+                </div>
+                <div class="form-group">
+                    <label>企业微信Webhook:</label>
+                    <input type="text" id="setting-wechat-webhook" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=...">
+                </div>
+                <div class="form-group">
+                    <label>告警邮箱:</label>
+                    <input type="email" id="setting-email" placeholder="alert@example.com">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-save-settings" class="btn primary">保存设置</button>
+                <button class="btn modal-close">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/dataSimulator.js"></script>
+    <script src="js/thermalAnalysis.js"></script>
+    <script src="js/thermalAging.js"></script>
+    <script src="js/partialDischarge.js"></script>
+    <script src="js/visualization3D.js"></script>
+    <script src="js/playback.js"></script>
+    <script src="js/comparison.js"></script>
+    <script src="js/alertSystem.js"></script>
+    <script src="js/dataExport.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
