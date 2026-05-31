@@ -1,0 +1,4 @@
+com\powergrid\check\service\PerformanceAndTieBreakerTest.class
+com\powergrid\check\SwitchingOrderCheckApplicationTests.class
+com\powergrid\check\service\RiskAssessmentServiceTest.class
+com\powergrid\check\service\OrderCheckServiceTest.class

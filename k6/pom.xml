@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.18</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.powergrid</groupId>
+    <artifactId>switching-order-check</artifactId>
+    <version>1.0.0</version>
+    <name>switching-order-check</name>
+    <description>电力倒闸操作票校核引擎</description>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <drools.version>7.74.1.Final</drools.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-neo4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-core</artifactId>
+            <version>${drools.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-compiler</artifactId>
+            <version>${drools.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-mvel</artifactId>
+            <version>${drools.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.kie</groupId>
+            <artifactId>kie-api</artifactId>
+            <version>${drools.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.kie</groupId>
+            <artifactId>kie-internal</artifactId>
+            <version>${drools.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

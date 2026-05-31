@@ -1,0 +1,265 @@
+package com.powergrid.check.rules
+
+import com.powergrid.check.model.fact.OperationContext
+import com.powergrid.check.model.dto.OperationStep
+import com.powergrid.check.model.graph.PowerDevice
+import com.powergrid.check.model.graph.Disconnector
+import com.powergrid.check.model.graph.GroundSwitch
+import com.powergrid.check.model.graph.Breaker
+
+rule "防止带负荷拉合隔离开关 - 拉闸"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.OPEN,
+            targetDevice != null,
+            targetDevice instanceof Disconnector,
+            associatedBreaker != null,
+            associatedBreaker.status == "CLOSED",
+            hasLoad == true
+        )
+    then
+        $context.addViolation(
+            "防止带负荷拉合隔离开关",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "请先断开断路器[" + $context.getAssociatedBreaker().getDeviceId() + "]，再操作隔离开关",
+            "CRITICAL"
+        );
+        System.out.println("[规则触发] 防止带负荷拉合隔离开关 - 设备: " + $context.getTargetDevice().getDeviceId());
+end
+
+rule "防止带负荷拉合隔离开关 - 合闸"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.CLOSE,
+            targetDevice != null,
+            targetDevice instanceof Disconnector,
+            associatedBreaker != null,
+            associatedBreaker.status == "CLOSED",
+            hasLoad == true
+        )
+    then
+        $context.addViolation(
+            "防止带负荷拉合隔离开关",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "断路器[" + $context.getAssociatedBreaker().getDeviceId() + "]处于合闸状态，禁止带负荷合隔离开关",
+            "CRITICAL"
+        );
+        System.out.println("[规则触发] 防止带负荷拉合隔离开关 - 设备: " + $context.getTargetDevice().getDeviceId());
+end
+
+rule "防止带地线合闸"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.CLOSE,
+            hasGrounding == true,
+            nearbyGroundSwitches != null,
+            !nearbyGroundSwitches.isEmpty()
+        )
+    then
+        String groundDevices = "";
+        for (PowerDevice gs : $context.getNearbyGroundSwitches()) {
+            if (gs.getStatus() == "CLOSED" || gs.getStatus() == "GROUNDED") {
+                groundDevices += gs.getDeviceId() + "、";
+            }
+        }
+        if (!groundDevices.isEmpty()) {
+            groundDevices = groundDevices.substring(0, groundDevices.length() - 1);
+            $context.addViolation(
+                "防止带地线合闸",
+                $context.getTargetDevice().getDeviceId(),
+                $context.getTargetDevice().getName(),
+                "存在闭合的接地刀闸[" + groundDevices + "]，请先拆除地线",
+                "CRITICAL"
+            );
+            System.out.println("[规则触发] 防止带地线合闸 - 设备: " + $context.getTargetDevice().getDeviceId());
+        }
+end
+
+rule "防止带电挂地线"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.CLOSE,
+            targetDevice != null,
+            targetDevice instanceof GroundSwitch,
+            isEnergized == true
+        )
+    then
+        $context.addViolation(
+            "防止带电挂地线",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "设备侧仍带电，禁止合接地刀闸。请确认电源已完全断开",
+            "CRITICAL"
+        );
+        System.out.println("[规则触发] 防止带电挂地线 - 设备: " + $context.getTargetDevice().getDeviceId());
+end
+
+rule "防止误入带电间隔"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            intervalId != null,
+            isEnergized == true,
+            targetDevice != null,
+            !(targetDevice instanceof GroundSwitch)
+        )
+    then
+        $context.addViolation(
+            "防止误入带电间隔",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "间隔[" + $context.getIntervalId() + "]带电，禁止进入操作",
+            "CRITICAL"
+        );
+        System.out.println("[规则触发] 防止误入带电间隔 - 间隔: " + $context.getIntervalId());
+end
+
+rule "防止误分合断路器 - 分闸验证"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.OPEN,
+            targetDevice != null,
+            targetDevice instanceof Breaker,
+            isTieBreaker == false,
+            targetDevice.status == "OPEN"
+        )
+    then
+        $context.addViolation(
+            "防止误分合断路器",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "断路器已处于分闸状态，无需重复操作",
+            "WARNING"
+        );
+        System.out.println("[规则触发] 防止误分合断路器 - 重复分闸: " + $context.getTargetDevice().getDeviceId());
+end
+
+rule "防止误分合断路器 - 合闸验证"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.CLOSE,
+            targetDevice != null,
+            targetDevice instanceof Breaker,
+            isTieBreaker == false,
+            targetDevice.status == "CLOSED"
+        )
+    then
+        $context.addViolation(
+            "防止误分合断路器",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "断路器已处于合闸状态，无需重复操作",
+            "WARNING"
+        );
+        System.out.println("[规则触发] 防止误分合断路器 - 重复合闸: " + $context.getTargetDevice().getDeviceId());
+end
+
+rule "联络断路器操作 - 分闸验证（两侧均有电）"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.OPEN,
+            targetDevice != null,
+            targetDevice instanceof Breaker,
+            isTieBreaker == true,
+            bothSidesEnergized == true
+        )
+    then
+        $context.addViolation(
+            "联络断路器操作",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "联络断路器两侧均带电，分闸操作将导致电网解列。请确认操作必要性，并采取相应措施后再操作",
+            "WARNING"
+        );
+        System.out.println("[规则触发] 联络断路器操作 - 两侧均带电分闸: " + $context.getTargetDevice().getDeviceId());
+end
+
+rule "联络断路器操作 - 合闸验证（两侧均有电，不同期）"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.CLOSE,
+            targetDevice != null,
+            targetDevice instanceof Breaker,
+            isTieBreaker == true,
+            bothSidesEnergized == true
+        )
+    then
+        $context.addViolation(
+            "联络断路器操作",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "联络断路器两侧均带电，合闸前必须检查同期（电压、频率、相位一致）。请确认同期条件满足后再操作",
+            "WARNING"
+        );
+        System.out.println("[规则触发] 联络断路器操作 - 两侧均带电合闸需同期: " + $context.getTargetDevice().getDeviceId());
+end
+
+rule "联络断路器操作 - 合闸验证（单侧有电）"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.CLOSE,
+            targetDevice != null,
+            targetDevice instanceof Breaker,
+            isTieBreaker == true,
+            bothSidesEnergized == false,
+            (leftSideEnergized == true || rightSideEnergized == true),
+            targetDevice.status == "OPEN"
+        )
+    then
+        String energizedSide = $context.isLeftSideEnergized() ? "左侧" : "右侧";
+        System.out.println("[规则信息] 联络断路器单侧带电合闸: " + $context.getTargetDevice().getDeviceId()
+            + "，带电侧: " + energizedSide + "，属于正常送电操作");
+end
+
+rule "联络断路器操作 - 重复操作检查"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            targetDevice != null,
+            targetDevice instanceof Breaker,
+            isTieBreaker == true
+        )
+        $breaker: Breaker(status == "OPEN") from $context.targetDevice
+        eval($context.getCurrentStep().getOperationType() == OperationStep.OperationType.OPEN)
+    then
+        $context.addViolation(
+            "防止误分合断路器",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "联络断路器已处于分闸状态，无需重复操作",
+            "WARNING"
+        );
+        System.out.println("[规则触发] 联络断路器重复分闸: " + $context.getTargetDevice().getDeviceId());
+end
+
+rule "联络断路器操作 - 重复合闸检查"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            targetDevice != null,
+            targetDevice instanceof Breaker,
+            isTieBreaker == true
+        )
+        $breaker: Breaker(status == "CLOSED") from $context.targetDevice
+        eval($context.getCurrentStep().getOperationType() == OperationStep.OperationType.CLOSE)
+    then
+        $context.addViolation(
+            "防止误分合断路器",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "联络断路器已处于合闸状态，无需重复操作",
+            "WARNING"
+        );
+        System.out.println("[规则触发] 联络断路器重复合闸: " + $context.getTargetDevice().getDeviceId());
+end

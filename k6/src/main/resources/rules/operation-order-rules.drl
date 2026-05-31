@@ -1,0 +1,112 @@
+package com.powergrid.check.rules
+
+import com.powergrid.check.model.fact.OperationContext
+import com.powergrid.check.model.dto.OperationStep
+import com.powergrid.check.model.graph.Disconnector
+
+rule "合闸操作顺序：先合母线侧刀闸，再合线路侧刀闸"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.CLOSE,
+            targetDevice != null,
+            targetDevice instanceof Disconnector,
+            previousOperations != null
+        )
+        $disconnector: Disconnector(deviceId == $context.targetDevice.deviceId, sideType == "LINE_SIDE") from $context.targetDevice
+        eval( !isBusSideClosedBefore($context, $disconnector) )
+    then
+        String breakerId = $disconnector.getAssociatedBreakerId();
+        $context.addViolation(
+            "操作顺序约束",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "请先合母线侧刀闸，再合线路侧刀闸。请检查断路器[" + breakerId + "]对应的母线侧刀闸是否已合上",
+            "HIGH"
+        );
+        System.out.println("[规则触发] 操作顺序约束 - 先合母线侧刀闸，再合线路侧刀闸: " + $context.getTargetDevice().getDeviceId());
+end
+
+rule "分闸操作顺序：先分断路器，再分线路侧刀闸，最后分母线侧刀闸"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.OPEN,
+            targetDevice != null,
+            targetDevice instanceof Disconnector,
+            associatedBreaker != null,
+            associatedBreaker.status == "CLOSED"
+        )
+    then
+        $context.addViolation(
+            "操作顺序约束",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "请先断开断路器[" + $context.getAssociatedBreaker().getDeviceId() + "]，再操作隔离开关",
+            "HIGH"
+        );
+        System.out.println("[规则触发] 操作顺序约束 - 先断开断路器再拉刀闸: " + $context.getTargetDevice().getDeviceId());
+end
+
+rule "分闸顺序：线路侧刀闸先于母线侧刀闸"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.OPEN,
+            targetDevice != null,
+            targetDevice instanceof Disconnector,
+            previousOperations != null
+        )
+        $disconnector: Disconnector(deviceId == $context.targetDevice.deviceId, sideType == "BUS_SIDE") from $context.targetDevice
+        eval( !isLineSideOpenedBefore($context, $disconnector) )
+    then
+        String breakerId = $disconnector.getAssociatedBreakerId();
+        $context.addViolation(
+            "操作顺序约束",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "分闸时应先拉开线路侧刀闸，再拉开母线侧刀闸。请检查断路器[" + breakerId + "]对应的线路侧刀闸是否已拉开",
+            "HIGH"
+        );
+        System.out.println("[规则触发] 操作顺序约束 - 先分线路侧刀闸，再分母线侧刀闸: " + $context.getTargetDevice().getDeviceId());
+end
+
+function boolean isBusSideClosedBefore(OperationContext context, Disconnector lineSideDs) {
+    String breakerId = lineSideDs.getAssociatedBreakerId();
+    if (breakerId == null) return true;
+
+    java.util.Map<String, String> prevOps = context.getPreviousOperations();
+    int currentStep = context.getCurrentStep().getStepNumber();
+
+    for (java.util.Map.Entry<String, String> entry : prevOps.entrySet()) {
+        String key = entry.getKey();
+        String value = entry.getValue();
+        if (key.startsWith("BUS_SIDE_") && key.contains(breakerId) && "CLOSE".equals(value)) {
+            int step = Integer.parseInt(key.split("_STEP_")[1]);
+            if (step < currentStep) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function boolean isLineSideOpenedBefore(OperationContext context, Disconnector busSideDs) {
+    String breakerId = busSideDs.getAssociatedBreakerId();
+    if (breakerId == null) return true;
+
+    java.util.Map<String, String> prevOps = context.getPreviousOperations();
+    int currentStep = context.getCurrentStep().getStepNumber();
+
+    for (java.util.Map.Entry<String, String> entry : prevOps.entrySet()) {
+        String key = entry.getKey();
+        String value = entry.getValue();
+        if (key.startsWith("LINE_SIDE_") && key.contains(breakerId) && "OPEN".equals(value)) {
+            int step = Integer.parseInt(key.split("_STEP_")[1]);
+            if (step < currentStep) {
+                return true;
+            }
+        }
+    }
+    return false;
+}

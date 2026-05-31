@@ -1,0 +1,72 @@
+package com.powergrid.check.rules
+
+import com.powergrid.check.model.fact.OperationContext
+import com.powergrid.check.model.dto.OperationStep
+import com.powergrid.check.model.graph.PowerDevice
+
+rule "设备操作互斥锁检查"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            targetDevice != null,
+            deviceStatusMap != null,
+            simulationMode == false
+        )
+        eval( isDeviceLocked($context) )
+    then
+        $context.addViolation(
+            "设备互斥锁",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "设备正被其他操作锁定，请稍后再试",
+            "MEDIUM"
+        );
+        System.out.println("[规则触发] 设备互斥锁 - 设备: " + $context.getTargetDevice().getDeviceId() + " 已被锁定");
+end
+
+rule "设备状态一致性检查"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.CLOSE,
+            targetDevice != null,
+            targetDevice.status == "CLOSED"
+        )
+    then
+        $context.addViolation(
+            "设备状态检查",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "设备已处于合闸状态，无需重复合闸",
+            "WARNING"
+        );
+        System.out.println("[规则触发] 设备状态检查 - 重复合闸: " + $context.getTargetDevice().getDeviceId());
+end
+
+rule "设备状态一致性检查 - 分闸"
+    when
+        $context: OperationContext(
+            currentStep != null,
+            currentStep.operationType == OperationStep.OperationType.OPEN,
+            targetDevice != null,
+            targetDevice.status == "OPEN"
+        )
+    then
+        $context.addViolation(
+            "设备状态检查",
+            $context.getTargetDevice().getDeviceId(),
+            $context.getTargetDevice().getName(),
+            "设备已处于分闸状态，无需重复分闸",
+            "WARNING"
+        );
+        System.out.println("[规则触发] 设备状态检查 - 重复分闸: " + $context.getTargetDevice().getDeviceId());
+end
+
+function boolean isDeviceLocked(OperationContext context) {
+    java.util.Map<String, PowerDevice> statusMap = context.getDeviceStatusMap();
+    if (statusMap == null) return false;
+
+    String deviceId = context.getTargetDevice().getDeviceId();
+    PowerDevice device = statusMap.get("LOCK_" + deviceId);
+    return device != null;
+}
