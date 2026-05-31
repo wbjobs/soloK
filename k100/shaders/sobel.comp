@@ -1,0 +1,73 @@
+#version 450
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(binding = 0, rgba8) uniform readonly image2D inputImage;
+layout(binding = 1, r8) uniform writeonly image2D edgeImage;
+layout(binding = 2, r32f) uniform writeonly image2D heightImage;
+
+layout(push_constant) uniform PushConstants {
+    uint width;
+    uint height;
+    float threshold;
+    float edgeStrength;
+} pc;
+
+const mat3 sobelX = mat3(
+    -1.0, 0.0, 1.0,
+    -2.0, 0.0, 2.0,
+    -1.0, 0.0, 1.0
+);
+
+const mat3 sobelY = mat3(
+    -1.0, -2.0, -1.0,
+     0.0,  0.0,  0.0,
+     1.0,  2.0,  1.0
+);
+
+float luminance(vec4 color) {
+    return 0.299 * color.r + 0.587 * color.g + 0.114 * color.b;
+}
+
+int mirrorCoord(int coord, int size) {
+    if (coord < 0) return -coord;
+    if (coord >= size) return 2 * size - 2 - coord;
+    return coord;
+}
+
+void main() {
+    ivec2 pixelCoord = ivec2(gl_GlobalInvocationID.xy);
+    
+    if (pixelCoord.x >= int(pc.width) || pixelCoord.y >= int(pc.height)) {
+        return;
+    }
+    
+    ivec2 imgSize = ivec2(int(pc.width), int(pc.height));
+    float gx = 0.0;
+    float gy = 0.0;
+    
+    for (int dy = -1; dy <= 1; dy++) {
+        for (int dx = -1; dx <= 1; dx++) {
+            ivec2 sampleCoord = ivec2(
+                mirrorCoord(pixelCoord.x + dx, imgSize.x),
+                mirrorCoord(pixelCoord.y + dy, imgSize.y)
+            );
+            
+            vec4 color = imageLoad(inputImage, sampleCoord);
+            float gray = luminance(color);
+            
+            gx += gray * sobelX[dy + 1][dx + 1];
+            gy += gray * sobelY[dy + 1][dx + 1];
+        }
+    }
+    
+    float magnitude = sqrt(gx * gx + gy * gy);
+    float edge = step(pc.threshold, magnitude) * magnitude * pc.edgeStrength;
+    edge = clamp(edge, 0.0, 255.0);
+    
+    float normalizedEdge = edge / 255.0;
+    float height = normalizedEdge * 0.5 + 0.5;
+    
+    imageStore(edgeImage, pixelCoord, vec4(edge / 255.0, 0.0, 0.0, 1.0));
+    imageStore(heightImage, pixelCoord, vec4(height, 0.0, 0.0, 1.0));
+}
