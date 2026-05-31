@@ -1,0 +1,30 @@
+[package]
+name = "timber-assess"
+version = "0.1.0"
+edition = "2021"
+description = "古建筑木结构残损评估命令行工具"
+license = "MIT"
+
+[[bin]]
+name = "timber-assess"
+path = "src/main.rs"
+
+[dependencies]
+ndarray = "0.15"
+ndarray-linalg = { version = "0.16", features = ["openblas-static"] }
+rayon = "1.8"
+clap = { version = "4.4", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+las = "0.8"
+ply-rs = "0.2"
+kdtree = "0.7"
+rand = "0.8"
+glob = "0.3"
+chrono = "0.4"
+linreg = "0.2"
+statrs = "0.16"
+num_cpus = "1.16"
+
+[dev-dependencies]
+tempfile = "3.8"

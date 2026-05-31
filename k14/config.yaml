@@ -1,0 +1,58 @@
+# 古建筑木结构残损评估工具 - 配置文件
+
+# 腐朽检测配置
+decay:
+  # 腐朽颜色阈值（低）RGB
+  color_threshold_low: [100, 50, 0]
+  # 腐朽颜色阈值（高）RGB
+  color_threshold_high: [180, 120, 60]
+  # 回波强度阈值（低于此值视为腐朽）
+  intensity_threshold: 50.0
+  # 最小腐朽区域面积（平方毫米）
+  min_decay_area: 10.0
+
+# 虫蛀检测配置
+insect:
+  # 虫孔最小半径（毫米）
+  hole_radius_min: 2.0
+  # 虫孔最大半径（毫米）
+  hole_radius_max: 15.0
+  # 聚类距离阈值（毫米）
+  clustering_eps: 50.0
+  # 最小聚类大小
+  min_cluster_size: 3
+
+# 开裂检测配置
+crack:
+  # RANSAC迭代次数
+  ransac_iterations: 1000
+  # 点到平面距离阈值（毫米）
+  distance_threshold: 5.0
+  # 最小裂缝长度（毫米）
+  min_crack_length: 50.0
+  # 最大裂缝宽度（毫米）
+  max_crack_width: 30.0
+  # 木纹检测K近邻数
+  grain_k_neighbors: 10
+  # 裂缝与木纹方向最小夹角余弦值（>此值可能是木纹）
+  grain_dir_threshold: 0.9
+  # 裂缝验证最小得分
+  crack_min_score: 40.0
+
+# 力学评估配置
+mechanics:
+  # 安全系数
+  safety_factor: 1.5
+  # 参考标准
+  reference_standard: "GB50005-2017"
+  # 环境影响系数
+  environment_factor: 1.0
+
+# 输出配置
+output:
+  # ASCII热图分辨率
+  heatmap_resolution: 20
+  # 是否导出VTK文件
+  export_vtk: false
+  # 报告模板
+  report_template: "default"
