@@ -1,0 +1,11 @@
+# Transition probability file for traffic_light FSM
+# Format: from_state to_state probability
+IDLE GREEN 0.8
+IDLE IDLE 0.2
+GREEN YELLOW 0.6
+GREEN RED 0.2
+GREEN GREEN 0.2
+YELLOW RED 0.9
+YELLOW YELLOW 0.1
+RED GREEN 0.7
+RED RED 0.3

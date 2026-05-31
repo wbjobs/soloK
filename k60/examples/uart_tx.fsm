@@ -1,0 +1,29 @@
+fsm uart_tx clock_freq=50 reset=sync encoding=gray {
+    state IDLE initial;
+    state START;
+    state DATA;
+    state PARITY;
+    state STOP;
+
+    input tx_data : 8;
+    input tx_start : 1;
+    output tx_out : 1;
+    output tx_busy : 1;
+    reg bit_cnt : 3;
+    reg shift_reg : 8;
+    reg baud_cnt : 16;
+
+    IDLE -> START [tx_start == 1] { tx_busy = 1; tx_out = 0; shift_reg = tx_data; baud_cnt = 0; bit_cnt = 0; };
+    START -> DATA [baud_cnt >= 5208] { tx_out = shift_reg[0:0]; shift_reg = shift_reg >> 1; baud_cnt = 0; bit_cnt = bit_cnt + 1; };
+    DATA -> DATA [baud_cnt >= 5208] [bit_cnt < 7] { tx_out = shift_reg[0:0]; shift_reg = shift_reg >> 1; baud_cnt = 0; bit_cnt = bit_cnt + 1; };
+    DATA -> PARITY [baud_cnt >= 5208] [bit_cnt >= 7] { tx_out = 1; baud_cnt = 0; };
+    PARITY -> STOP [baud_cnt >= 5208] { tx_out = 1; baud_cnt = 0; };
+    STOP -> IDLE [baud_cnt >= 5208] { tx_busy = 0; tx_out = 1; baud_cnt = 0; };
+
+    START -> START [baud_cnt < 5208] { baud_cnt = baud_cnt + 1; };
+    DATA -> DATA [baud_cnt < 5208] { baud_cnt = baud_cnt + 1; };
+    PARITY -> PARITY [baud_cnt < 5208] { baud_cnt = baud_cnt + 1; };
+    STOP -> STOP [baud_cnt < 5208] { baud_cnt = baud_cnt + 1; };
+
+    IDLE -> IDLE [tx_start == 0] { tx_busy = 0; tx_out = 1; };
+}

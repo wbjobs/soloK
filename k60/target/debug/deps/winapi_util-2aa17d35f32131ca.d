@@ -1,0 +1,11 @@
+E:\soloK\k60\target\debug\deps\winapi_util-2aa17d35f32131ca.d: C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\lib.rs C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\console.rs C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\file.rs C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\sysinfo.rs C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\win.rs
+
+E:\soloK\k60\target\debug\deps\libwinapi_util-2aa17d35f32131ca.rlib: C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\lib.rs C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\console.rs C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\file.rs C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\sysinfo.rs C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\win.rs
+
+E:\soloK\k60\target\debug\deps\libwinapi_util-2aa17d35f32131ca.rmeta: C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\lib.rs C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\console.rs C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\file.rs C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\sysinfo.rs C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\win.rs
+
+C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\lib.rs:
+C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\console.rs:
+C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\file.rs:
+C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\sysinfo.rs:
+C:\Users\61910\.cargo\registry\src\mirrors.ustc.edu.cn-38d0e5eb5da2abae\winapi-util-0.1.11\src\win.rs:
