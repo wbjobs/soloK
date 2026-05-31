@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Fuzz Engine</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="header-inner">
+      <h1>🔍 API Fuzz Engine</h1>
+      <p>OpenAPI / Swagger 模糊测试引擎</p>
+    </div>
+  </header>
+
+  <main>
+    <section id="config-section" class="card">
+      <h2>📋 测试配置</h2>
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>OpenAPI/Swagger 规范文件</label>
+          <div class="spec-input-tabs">
+            <button class="tab-btn active" data-tab="file">上传文件</button>
+            <button class="tab-btn" data-tab="text">粘贴内容</button>
+          </div>
+          <div id="tab-file" class="tab-content active">
+            <input type="file" id="spec-file" accept=".json,.yaml,.yml" class="file-input">
+            <label for="spec-file" class="file-label">选择 JSON/YAML 文件</label>
+          </div>
+          <div id="tab-text" class="tab-content">
+            <textarea id="spec-text" rows="8" placeholder='粘贴 OpenAPI/Swagger 规范内容...'></textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>目标 Base URL</label>
+          <input type="text" id="base-url" placeholder="https://api.example.com">
+        </div>
+
+        <div class="form-group">
+          <label>规范格式</label>
+          <select id="spec-format">
+            <option value="auto">自动检测</option>
+            <option value="json">JSON</option>
+            <option value="yaml">YAML</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>并发数</label>
+          <input type="number" id="concurrency" value="5" min="1" max="20">
+        </div>
+
+        <div class="form-group">
+          <label>请求间隔 (ms)</label>
+          <input type="number" id="delay-ms" value="100" min="0" max="5000">
+        </div>
+
+        <div class="form-group">
+          <label>超时时间 (s)</label>
+          <input type="number" id="timeout" value="30" min="5" max="120">
+        </div>
+
+        <div class="form-group full-width">
+          <label>漏洞类型</label>
+          <div class="checkbox-group">
+            <label class="checkbox-label"><input type="checkbox" value="sql_injection" checked> SQL 注入</label>
+            <label class="checkbox-label"><input type="checkbox" value="xss" checked> XSS 跨站脚本</label>
+            <label class="checkbox-label"><input type="checkbox" value="idor" checked> 越权访问</label>
+            <label class="checkbox-label"><input type="checkbox" value="param_pollution" checked> 参数污染</label>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>🔐 认证配置</label>
+          <div class="auth-tabs">
+            <button type="button" class="auth-tab-btn active" data-auth-tab="bearer">Bearer Token</button>
+            <button type="button" class="auth-tab-btn" data-auth-tab="cookie">Cookie</button>
+            <button type="button" class="auth-tab-btn" data-auth-tab="apikey">API Key</button>
+            <button type="button" class="auth-tab-btn" data-auth-tab="custom">自定义 Headers</button>
+          </div>
+          <div id="auth-bearer" class="auth-tab-content active">
+            <input type="text" id="bearer-token" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+            <small>自动添加 Authorization: Bearer {token}</small>
+          </div>
+          <div id="auth-cookie" class="auth-tab-content">
+            <input type="text" id="cookie-value" placeholder="sessionId=abc123; userId=456">
+            <small>自动添加 Cookie: {value}</small>
+          </div>
+          <div id="auth-apikey" class="auth-tab-content">
+            <div style="display:flex;gap:8px">
+              <input type="text" id="api-key-header" value="X-API-Key" placeholder="Header Name" style="width:30%">
+              <input type="text" id="api-key-value" placeholder="api-key-value">
+            </div>
+            <small>自动添加 {header}: {value}</small>
+          </div>
+          <div id="auth-custom" class="auth-tab-content">
+            <textarea id="custom-headers" rows="2" placeholder='{"Authorization": "Basic dXNlcj..." or "X-Custom": "value"}'>{}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button id="btn-parse" class="btn btn-secondary">解析规范</button>
+        <button id="btn-start" class="btn btn-primary" disabled>开始测试</button>
+        <button id="btn-stop" class="btn btn-danger" style="display:none">停止</button>
+      </div>
+    </section>
+
+    <section id="endpoints-section" class="card" style="display:none">
+      <h2>📡 解析到的端点 (<span id="ep-count">0</span>)</h2>
+      <div id="endpoints-list" class="endpoints-list"></div>
+    </section>
+
+    <section id="progress-section" class="card" style="display:none">
+      <h2>⏳ 测试进度</h2>
+      <div class="progress-bar-container">
+        <div id="progress-bar" class="progress-bar" style="width:0%"></div>
+      </div>
+      <p id="progress-text">准备中...</p>
+    </section>
+
+    <section id="results-section" class="card" style="display:none">
+      <h2>📊 测试结果</h2>
+      <div class="summary-cards" id="summary-cards"></div>
+      <div class="findings-table-wrapper">
+        <table id="findings-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>类型</th>
+              <th>严重程度</th>
+              <th>端点</th>
+              <th>测试名</th>
+              <th>Payload</th>
+              <th>状态码</th>
+              <th>证据</th>
+              <th>复现</th>
+            </tr>
+          </thead>
+          <tbody id="findings-body"></tbody>
+        </table>
+      </div>
+      <div class="btn-row" style="margin-top:16px">
+        <button id="btn-download-json" class="btn btn-secondary">下载 JSON 报告</button>
+        <button id="btn-download-html" class="btn btn-secondary">下载 HTML 报告</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
