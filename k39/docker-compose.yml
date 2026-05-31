@@ -1,0 +1,84 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: k39_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: k39user
+      POSTGRES_PASSWORD: k39password
+      POSTGRES_DB: k39db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U k39user -d k39db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - k39_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: k39_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://k39user:k39password@postgres:5432/k39db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - backend_models:/app/models
+      - backend_uploads:/app/data/uploads
+      - backend_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - k39_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: k39_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    volumes:
+      - ./frontend/src:/app/src
+    depends_on:
+      - backend
+    networks:
+      - k39_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: k39_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - k39_network
+
+networks:
+  k39_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  backend_models:
+  backend_uploads:
+  backend_logs:

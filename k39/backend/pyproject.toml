@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Video Analysis Backend with YOLO"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "sqlalchemy>=2.0.0",
+    "psycopg2-binary>=2.9.0",
+    "alembic>=1.13.0",
+    "python-multipart>=0.0.9",
+    "ultralytics>=8.1.0",
+    "opencv-python>=4.9.0",
+    "numpy>=1.26.0",
+    "scipy>=1.11.0",
+    "scikit-learn>=1.4.0",
+    "filterpy>=1.4.5",
+    "reportlab>=4.1.0",
+    "moviepy>=1.0.3",
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.2.0",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "aiofiles>=23.2.0",
+    "websockets>=12.0",
+]
+
+[project.scripts]
+start-server = "app.main:start"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
