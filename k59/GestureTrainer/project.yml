@@ -1,0 +1,60 @@
+name: GestureTrainer
+options:
+  bundleIdPrefix: com.gesturetrainer
+  deploymentTarget:
+    iOS: "16.0"
+    macOS: "13.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.9"
+    DEVELOPMENT_TEAM: ""
+
+targets:
+  GestureTrainer:
+    type: application
+    platform: [iOS, macOS]
+    sources:
+      - path: GestureTrainer
+        excludes:
+          - "**/.DS_Store"
+    resources:
+      - path: GestureTrainer/Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.gesturetrainer.app
+        INFOPLIST_FILE: GestureTrainer/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: false
+        CODE_SIGN_ENTITLEMENTS: GestureTrainer/GestureTrainer.entitlements
+    entitlements:
+      path: GestureTrainer/GestureTrainer.entitlements
+      properties:
+        com.apple.developer.icloud-container-identifiers:
+          - "iCloud.$(CFBundleIdentifier)"
+        com.apple.developer.ubiquity-container-identifiers:
+          - "iCloud.$(CFBundleIdentifier)"
+        com.apple.developer.icloud-services:
+          - CloudKit
+    dependencies:
+      - sdk: MultipeerConnectivity.framework
+    info:
+      path: GestureTrainer/Info.plist
+    scheme:
+      testTargets:
+        - GestureTrainerTests
+
+  GestureTrainerTests:
+    type: bundle.unit-test
+    platform: [iOS, macOS]
+    sources:
+      - path: GestureTrainer/Tests
+    dependencies:
+      - target: GestureTrainer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.gesturetrainer.tests
