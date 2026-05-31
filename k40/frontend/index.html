@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地下水污染羽流实时可视化系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div id="sidebar">
+            <h1>地下水污染羽流可视化</h1>
+            
+            <div class="control-section">
+                <h3>控制面板</h3>
+                
+                <div class="control-group">
+                    <label>污染物类型</label>
+                    <select id="contaminant-select">
+                        <option value="TCE">三氯乙烯 (TCE)</option>
+                        <option value="PCE">四氯乙烯 (PCE)</option>
+                        <option value="Chromium">铬 (Chromium)</option>
+                        <option value="Lead">铅 (Lead)</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>浓度阈值 (μg/L)</label>
+                    <input type="range" id="threshold-slider" min="0" max="50" value="5" step="0.5">
+                    <span id="threshold-value">5.0</span>
+                </div>
+                
+                <div class="control-group">
+                    <label>显示选项</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="show-isosurface" checked> 等值面</label>
+                        <label><input type="checkbox" id="show-wells" checked> 监测井</label>
+                        <label><input type="checkbox" id="show-cutplane"> 剖切平面</label>
+                        <label><input type="checkbox" id="show-highrisk" checked> 高风险区域</label>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>剖切平面方向</label>
+                    <select id="cutplane-axis">
+                        <option value="x">X轴</option>
+                        <option value="y">Y轴</option>
+                        <option value="z">Z轴</option>
+                    </select>
+                    <input type="range" id="cutplane-position" min="0" max="100" value="50">
+                </div>
+                
+                <div class="control-group">
+                    <label>动画速度</label>
+                    <select id="speed-select">
+                        <option value="1">实时 (1x)</option>
+                        <option value="3600" selected>加速 (3600x)</option>
+                        <option value="7200">快速 (7200x)</option>
+                        <option value="36000">超快速 (36000x)</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>时间轴</label>
+                    <div id="timeline-container">
+                        <input type="range" id="timeline" min="0" max="100" value="0">
+                        <div id="timeline-labels">
+                            <span id="start-time">开始</span>
+                            <span id="current-time">当前</span>
+                            <span id="end-time">结束</span>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button id="play-btn">▶ 播放</button>
+                        <button id="pause-btn">❚❚ 暂停</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>风险评估</label>
+                    <div id="risk-info">
+                        <div class="risk-item">
+                        <span class="risk-label">超标体积:</span>
+                        <span id="risk-volume">-</span>
+                        </div>
+                        <div class="risk-item">
+                        <span class="risk-label">超标比例:</span>
+                        <span id="risk-percent">-</span>
+                        </div>
+                        <div class="risk-item">
+                        <span class="risk-label">最大浓度:</span>
+                        <span id="max-concentration">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <button id="forecast-btn">预测3个月后</button>
+                    <button id="optimize-btn">监测网优化</button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>修复模拟</h3>
+                
+                <div class="control-group">
+                    <button id="place-injection-btn">📍 放置注入井</button>
+                    <button id="clear-injection-btn" style="margin-left: 5px;">清除</button>
+                </div>
+
+                <div class="control-group" id="injection-params" style="display: none;">
+                    <label>井编号</label>
+                    <input type="text" id="injection-well-id" value="INJ-001">
+                    
+                    <label>修复类型</label>
+                    <select id="injection-type">
+                        <option value="chemical_oxidation">化学氧化</option>
+                        <option value="bioremediation">生物修复</option>
+                    </select>
+                    
+                    <label>药剂浓度 (mg/L)</label>
+                    <input type="number" id="reagent-concentration" value="1000" min="100" max="5000">
+                    
+                    <label>注入速率 (m³/d)</label>
+                    <input type="number" id="injection-rate" value="10" min="1" max="100">
+                    
+                    <label>反应半衰期 (天)</label>
+                    <input type="number" id="reaction-half-life" value="7" min="1" max="30">
+                    
+                    <label>降解速率 (day⁻¹)</label>
+                    <input type="number" id="degradation-rate" value="0.5" min="0.1" max="5.0" step="0.1">
+                    
+                    <div class="button-group">
+                        <button id="confirm-injection-btn">确认放置</button>
+                        <button id="cancel-injection-btn">取消</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>修复时长 (天)</label>
+                    <input type="number" id="remediation-duration" value="30" min="7" max="365">
+                    
+                    <button id="simulate-remediation-btn" style="margin-top: 10px; width: 100%; background: #00aa44;">
+                        ▶ 运行修复模拟
+                    </button>
+                </div>
+
+                <div class="control-group" id="remediation-result" style="display: none;">
+                    <label>修复效果</label>
+                    <div class="risk-item">
+                        <span class="risk-label">削减比例:</span>
+                        <span id="remediation-reduction" style="color: #00ff88;">-</span>
+                    </div>
+                    <div class="risk-item">
+                        <span class="risk-label">风险降低:</span>
+                        <span id="risk-reduction" style="color: #00ff88;">-</span>
+                    </div>
+                    <div class="risk-item">
+                        <span class="risk-label">药剂用量:</span>
+                        <span id="reagent-used">-</span>
+                    </div>
+                    <div class="button-group">
+                        <button id="show-comparison-btn">显示对比动画</button>
+                        <button id="apply-remediation-btn">应用修复结果</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>数据同化 (EnKF)</h3>
+                
+                <div class="control-group">
+                    <label>集合大小</label>
+                    <input type="number" id="enkf-ensemble-size" value="50" min="20" max="200">
+                    
+                    <label>观测噪声</label>
+                    <input type="number" id="enkf-noise" value="0.1" min="0.01" max="1.0" step="0.01">
+                    
+                    <label>待更新参数</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="param-k" checked> 水力传导率</label>
+                        <label><input type="checkbox" id="param-phi" checked> 孔隙度</label>
+                        <label><input type="checkbox" id="param-lambda" checked> 降解速率</label>
+                    </div>
+                    
+                    <button id="assimilate-btn" style="margin-top: 10px; width: 100%; background: #8844ff;">
+                        🔄 执行数据同化
+                    </button>
+                    <button id="reset-enkf-btn" style="margin-top: 5px; width: 100%;">
+                        重置参数
+                    </button>
+                </div>
+
+                <div class="control-group" id="enkf-result" style="display: none;">
+                    <label>参数更新结果</label>
+                    <div id="parameter-list"></div>
+                    <div class="risk-item">
+                        <span class="risk-label">预测改进:</span>
+                        <span id="forecast-improvement" style="color: #ffcc00;">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="tooltip" class="hidden">
+                <div id="tooltip-content"></div>
+            </div>
+        </div>
+        
+        <div id="main-content">
+            <div id="canvas-container"></div>
+            
+            <div id="info-bar">
+                <div class="info-item">
+                    <span class="info-label">连接状态:</span>
+                    <span id="connection-status" class="status-connected">已连接</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">当前时间:</span>
+                    <span id="current-timestamp">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">监测井数量:</span>
+                    <span id="well-count">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">模拟小时:</span>
+                    <span id="simulation-hours">0</span>
+                </div>
+            </div>
+            
+            <div id="trend-popup" class="hidden">
+                <div id="trend-header">
+                    <span id="trend-title">监测井历史趋势</span>
+                    <button id="close-trend">×</button>
+                </div>
+                <div id="trend-chart"></div>
+            </div>
+            
+            <div id="colorbar-container">
+                <canvas id="colorbar"></canvas>
+                <div id="colorbar-labels">
+                    <span>低</span>
+                    <span>浓度 (μg/L)</span>
+                    <span>高</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="js/main.js?v=2"></script>
+</body>
+</html>
