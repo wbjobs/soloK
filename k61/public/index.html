@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>协作白板 - Collaborative Whiteboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🎨 协作白板</h1>
+            <div class="room-controls">
+                <input type="text" id="roomId" placeholder="输入房间号" value="default">
+                <button id="joinBtn">加入房间</button>
+                <button id="clearBtn" class="danger">清空画布</button>
+            </div>
+            <div class="status">
+                <span id="connectionStatus">未连接</span>
+                <span id="userCount">在线: 0</span>
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <div class="tool-group">
+                <button class="tool-btn active" data-tool="pen" title="画笔">
+                    ✏️ 画笔
+                </button>
+                <button class="tool-btn" data-tool="eraser" title="橡皮擦">
+                    🧹 橡皮擦
+                </button>
+            </div>
+
+            <div class="tool-group">
+                <label>颜色:</label>
+                <input type="color" id="colorPicker" value="#000000">
+            </div>
+
+            <div class="tool-group">
+                <label>大小:</label>
+                <input type="range" id="sizePicker" min="1" max="50" value="5">
+                <span id="sizeValue">5</span>
+            </div>
+
+            <div class="tool-group">
+                <label>压力感应:</label>
+                <input type="checkbox" id="pressureToggle" checked>
+            </div>
+
+            <div class="tool-group compression-mode-group">
+                <label>压缩模式:</label>
+                <label class="radio-label"><input type="radio" name="compressionMode" value="lossy" checked> 有损</label>
+                <label class="radio-label"><input type="radio" name="compressionMode" value="lossless"> 无损</label>
+            </div>
+        </div>
+
+        <div class="replay-bar">
+            <div class="replay-controls">
+                <label>回放时间:</label>
+                <select id="replayHours">
+                    <option value="0.5">30分钟</option>
+                    <option value="1" selected>1小时</option>
+                </select>
+                <label>速度:</label>
+                <select id="replaySpeed">
+                    <option value="2">2x</option>
+                    <option value="4" selected>4x</option>
+                    <option value="8">8x</option>
+                    <option value="16">16x</option>
+                </select>
+                <button id="replayBtn" class="replay-btn">▶ 回放擦除轨迹</button>
+                <button id="stopReplayBtn" class="replay-btn stop" disabled>⏹ 停止</button>
+                <progress id="replayProgress" value="0" max="100">0%</progress>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="whiteboard"></canvas>
+        </div>
+
+        <div class="stats-panel">
+            <h3>📊 数据压缩统计</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <label>原始数据大小</label>
+                    <span id="originalSize">0 B</span>
+                </div>
+                <div class="stat-item">
+                    <label>压缩后大小</label>
+                    <span id="compressedSize">0 B</span>
+                </div>
+                <div class="stat-item">
+                    <label>压缩率</label>
+                    <span id="compressionRatio">0%</span>
+                </div>
+                <div class="stat-item">
+                    <label>总传输数据</label>
+                    <span id="totalTransferred">0 B</span>
+                </div>
+            </div>
+            <div class="compression-history">
+                <h4>压缩历史</h4>
+                <ul id="compressionLog"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/compression.js"></script>
+    <script src="js/whiteboard.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
