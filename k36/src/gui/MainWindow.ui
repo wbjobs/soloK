@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindowClass</class>
+ <widget class="QMainWindow" name="MainWindowClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1600</width>
+    <height>1000</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>三维点云单木分割测量系统 - TreeLidar 3D</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QHBoxLayout" name="mainLayout">
+    <item>
+     <widget class="QWidget" name="leftPanel">
+      <property name="minimumWidth">
+       <number>320</number>
+      </property>
+      <property name="maximumWidth">
+       <number>380</number>
+      </property>
+      <layout class="QVBoxLayout" name="leftLayout">
+       <item>
+        <widget class="QGroupBox" name="fileGroup">
+         <property name="title">
+          <string>文件操作</string>
+         </property>
+         <layout class="QGridLayout" name="fileLayout">
+          <item row="0" column="0">
+           <widget class="QPushButton" name="btnOpen">
+            <property name="text">
+             <string>打开点云</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="btnBatch">
+            <property name="text">
+             <string>批量处理</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="btnExport">
+            <property name="text">
+             <string>导出结果</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="btnPDF">
+            <property name="text">
+             <string>导出PDF</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QPushButton" name="btnClear">
+            <property name="text">
+             <string>清除结果</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="paramsGroup">
+         <property name="title">
+          <string>处理参数</string>
+         </property>
+         <layout class="QFormLayout" name="paramsLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelDemRes">
+            <property name="text">
+             <string>DEM分辨率(m):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="spinDemRes">
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="minimum">
+             <double>0.100000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelMinHeight">
+            <property name="text">
+             <string>最小树高(m):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="spinMinHeight">
+            <property name="value">
+             <double>2.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.500000000000000</double>
+            </property>
+            <property name="minimum">
+             <double>0.500000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="labelWindow">
+            <property name="text">
+             <string>检测窗口(m):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="spinWindow">
+            <property name="value">
+             <double>3.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.500000000000000</double>
+            </property>
+            <property name="minimum">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelAlgorithm">
+            <property name="text">
+             <string>分割算法:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="comboAlgorithm">
+            <item>
+             <property name="text">
+              <string>分水岭算法</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>区域生长</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="labelDBHHeight">
+            <property name="text">
+             <string>DBH高度(m):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="spinDBHHeight">
+            <property name="value">
+             <double>1.300000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="labelSlopeCorrect">
+            <property name="text">
+             <string>坡度校正:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QCheckBox" name="checkSlopeCorrect">
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0" colspan="2">
+           <widget class="QPushButton" name="btnRun">
+            <property name="text">
+             <string>开始分割</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="visualGroup">
+         <property name="title">
+          <string>可视化设置</string>
+         </property>
+         <layout class="QFormLayout" name="visualLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelColorMode">
+            <property name="text">
+             <string>着色方式:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="comboColorMode">
+            <item>
+             <property name="text">
+              <string>按高度</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>按树ID</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>按分类标签</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>按强度</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="checkShowTrees">
+            <property name="text">
+             <string>显示树木结构</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QCheckBox" name="checkShowTreetops">
+            <property name="text">
+             <string>显示树顶</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="checkShowGround">
+            <property name="text">
+             <string>显示地面点</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="checkTopView">
+            <property name="text">
+             <string>俯视模式</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="editGroup">
+         <property name="title">
+          <string>手动修正</string>
+         </property>
+         <layout class="QGridLayout" name="editLayout">
+          <item row="0" column="0">
+           <widget class="QPushButton" name="btnMerge">
+            <property name="text">
+             <string>合并树木</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="btnSplit">
+            <property name="text">
+             <string>切分树木</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="btnDelete">
+            <property name="text">
+             <string>删除树木</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="btnResetPick">
+            <property name="text">
+             <string>重置选择</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="treeListGroup">
+         <property name="title">
+          <string>树木列表</string>
+         </property>
+         <layout class="QVBoxLayout" name="treeListLayout">
+          <item>
+           <widget class="QListWidget" name="listTrees"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QWidget" name="centerPanel">
+      <layout class="QVBoxLayout" name="centerLayout">
+       <item>
+        <widget class="QWidget" name="vtkContainer" native="true">
+         <layout class="QVBoxLayout" name="vtkLayout">
+                  <property name="margin">
+                   <number>0</number>
+                  </property>
+                 </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="paramsTableGroup">
+         <property name="title">
+          <string>单木参数</string>
+         </property>
+         <layout class="QVBoxLayout" name="paramsTableLayout">
+          <item>
+           <widget class="QTableWidget" name="tableParams">
+            <property name="maximumHeight">
+             <number>250</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="statsGroup">
+         <property name="title">
+          <string>样地统计</string>
+         </property>
+         <layout class="QHBoxLayout" name="statsLayout">
+          <item>
+           <widget class="QLabel" name="labelStats">
+            <property name="text">
+             <string>总株数: - | 平均树高: - | 平均DBH: - | 样地面积: -</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
