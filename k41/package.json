@@ -1,0 +1,13 @@
+{
+  "name": "av-sync-calibrator",
+  "version": "1.0.0",
+  "description": "Peer-to-peer audio/video synchronization calibration between two browser windows via WebRTC",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.16.0"
+  }
+}

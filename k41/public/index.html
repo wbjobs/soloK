@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A/V 同步校准器</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>🎬 A/V 同步校准器</h1>
+      <p class="subtitle">WebRTC 点对点音视频同步校准</p>
+    </header>
+
+    <section id="room-section" class="card">
+      <h2>房间管理</h2>
+      <div class="room-actions">
+        <button id="btn-create" class="btn btn-primary">创建房间</button>
+        <div class="join-group">
+          <input id="input-room-code" type="text" placeholder="输入房间码" maxlength="6" autocomplete="off">
+          <button id="btn-join" class="btn btn-secondary">加入房间</button>
+        </div>
+      </div>
+      <div id="room-status" class="status-box hidden">
+        <span id="room-label"></span>
+        <span id="connection-status" class="badge">未连接</span>
+      </div>
+    </section>
+
+    <section id="video-section" class="card hidden">
+      <h2>测试视频</h2>
+      <div class="video-wrapper">
+        <canvas id="test-canvas" width="640" height="360"></canvas>
+      </div>
+      <div class="video-controls">
+        <button id="btn-play" class="btn btn-primary">▶ 播放</button>
+        <button id="btn-pause" class="btn btn-secondary" disabled>⏸ 暂停</button>
+        <button id="btn-reset" class="btn btn-secondary">↺ 重置</button>
+        <span class="speed-display">播放速度: <strong id="current-speed">1.000x</strong></span>
+      </div>
+    </section>
+
+    <section id="sync-section" class="card hidden">
+      <h2>同步状态</h2>
+      <div class="sync-stats">
+        <div class="stat">
+          <label>本端帧索引</label>
+          <span id="local-frame">--</span>
+        </div>
+        <div class="stat">
+          <label>对端帧索引</label>
+          <span id="remote-frame">--</span>
+        </div>
+        <div class="stat">
+          <label>帧差值</label>
+          <span id="frame-diff">--</span>
+        </div>
+        <div class="stat">
+          <label>延迟估计</label>
+          <span id="latency-est">--</span>
+        </div>
+        <div class="stat">
+          <label>当前校准速率</label>
+          <span id="calibration-rate">1.000x</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="audio-section" class="card hidden">
+      <h2>🎙️ 音频指纹同步</h2>
+      <div class="audio-controls">
+        <button id="btn-audio-start" class="btn btn-primary">🎤 启动麦克风</button>
+        <button id="btn-audio-stop" class="btn btn-secondary" disabled>⏹ 停止</button>
+        <span class="audio-status"><span id="audio-status-badge" class="badge">未启动</span></span>
+      </div>
+      <div class="audio-panels">
+        <div class="audio-panel">
+          <label>本端频谱</label>
+          <canvas id="local-spectrum-canvas" width="380" height="120"></canvas>
+        </div>
+        <div class="audio-panel">
+          <label>对端频谱</label>
+          <canvas id="remote-spectrum-canvas" width="380" height="120"></canvas>
+        </div>
+      </div>
+      <div class="audio-fingerprint-stats">
+        <div class="stat">
+          <label>指纹匹配度</label>
+          <span id="fingerprint-match">--</span>
+        </div>
+        <div class="stat">
+          <label>音频延迟估计</label>
+          <span id="audio-latency">--</span>
+        </div>
+        <div class="stat">
+          <label>指纹历史匹配</label>
+          <canvas id="fingerprint-history-canvas" width="380" height="80"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section id="chart-section" class="card hidden">
+      <h2>校准曲线</h2>
+      <canvas id="chart-canvas" width="800" height="300"></canvas>
+    </section>
+
+    <section id="history-section" class="card">
+      <h2>校准历史</h2>
+      <button id="btn-clear-history" class="btn btn-secondary btn-sm">清除历史</button>
+      <div id="history-list" class="history-list">
+        <p class="empty-hint">暂无历史记录</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
